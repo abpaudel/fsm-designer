@@ -736,6 +736,7 @@ function makeNodeTextOnly() {
 
 function radiusChanged() {
 	var newRadius = document.getElementById("rangeSlider").value;
+	document.getElementById('sliderValue').innerHTML = newRadius;
 	newRadius = parseInt(newRadius);
 	nodeRadius = newRadius;
 	draw();

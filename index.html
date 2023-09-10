@@ -111,7 +111,7 @@ if (typeof btoa == 'undefined') {
 			<li><b>Move something:</b> drag it around</li>
 			<li><b>Delete something:</b> click it and press the delete key (not the backspace key)</li>
 		</ul><ul>
-			<li><b>Circle radius:</b> <input type="range" id="rangeSlider" min="20" max="80" value="30" oninput="javascript:radiusChanged();" onchange="javascript:radiusChanged();" />
+			<li><b>Circle radius:</b> <input type="range" id="rangeSlider" min="20" max="80" value="30" oninput="javascript:radiusChanged();" onchange="javascript:radiusChanged();" /> <output id="sliderValue">30</output>
 			<li><b>If you just want to add more text:</b> <button onclick="javascript:makeNodeTextOnly()">Toggle drawing the selected node's circles</button>
 			<li><b>Click here to clear everything:</b> <button onclick="javascript:clearCanvas()">Clear everything</button>
 			<li><b>Make accept state:</b> double-click on an existing state</li>

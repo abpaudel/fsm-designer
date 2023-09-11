@@ -386,19 +386,13 @@ function ExportAsLaTeX(bounds) {
 	this._scale = 0.1; // to convert pixels to document space (TikZ breaks if the numbers get too big, above 500?)
 
 	this.toLaTeX = function() {
-		return '\\documentclass[12pt]{article}\n' +
-			'\\usepackage{tikz}\n' +
-			'\n' +
-			'\\begin{document}\n' +
-			'\n' +
+		return '% Please add \\usepackage{tikz} to your document preamble.\n\n' +
 			'\\begin{center}\n' +
 			'\\begin{tikzpicture}[scale=0.2]\n' +
 			'\\tikzstyle{every node}+=[inner sep=0pt]\n' +
 			this._texData +
 			'\\end{tikzpicture}\n' +
-			'\\end{center}\n' +
-			'\n' +
-			'\\end{document}\n';
+			'\\end{center}\n';
 	};
 
 	this.beginPath = function() {
@@ -486,6 +480,8 @@ function ExportAsLaTeX(bounds) {
 			y *= this._scale;
 			var escapedBraces = originalText.replace(/{/g, "\\{");
 			escapedBraces = escapedBraces.replace(/}/g, "\\}");
+			// For LateX compatibility, replace node names like "q_1_0" with "q_{10}"
+			escapedBraces = escapedBraces.replace(/_(\d+)_(\d+)/g, '_{\$1\$2}');
 			this._texData += '\\draw (' + fixed(x, 2) + ',' + fixed(-y, 2) + ') node ' + nodeParams + '{$' + escapedBraces.replace(/ /g, '\\mbox{ }') + '$};\n';
 		}
 	};

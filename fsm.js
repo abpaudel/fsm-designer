@@ -622,7 +622,7 @@ function convertLatexShortcuts(text) {
 	// subscripts
 	for(var i = 0; i < 10; i++) {
 		text = text.replace(new RegExp('_' + i, 'g'), String.fromCharCode(8320 + i));
-	}
+		}
 
 	return text;
 }
@@ -1019,8 +1019,12 @@ function saveAsPNG() {
 	tmp.width = croppedWidth;
 	tmp.height = croppedHeight;
 	tmp.getContext('2d').putImageData(croppedData, 0, 0);
-	var pngData = tmp.toDataURL('image/png');
-	document.location.href = pngData;
+	var url = tmp.toDataURL('image/png');
+    var newTab = window.open(url, '_blank');
+    // Release the URL when the tab or window is closed
+    newTab.addEventListener('beforeunload', function() {
+        URL.revokeObjectURL(url);
+    });
 }
 
 // Returns a bounding rectangle that contains all non-empty pixels. Returns an
@@ -1079,13 +1083,16 @@ function getBoundingRect() {
 }
 
 function downloadFile(filename, data, type) {
-	var element = document.createElement('a');
-	element.setAttribute('href', 'data:' + type + ';base64,' + btoa(data));
-	element.setAttribute('download', filename);
-	element.style.display = 'none';
-	document.body.appendChild(element);
-	element.click();
-	document.body.removeChild(element);
+    // Create a new Blob object from the Base64-encoded data
+    var blob = new Blob([data], { type: type });
+    // Create a URL for the Blob data
+    var url = URL.createObjectURL(blob);
+    // Open the URL in a new tab or window
+    var newTab = window.open(url, '_blank');
+    // Release the URL when the tab or window is closed
+    newTab.addEventListener('beforeunload', function() {
+        URL.revokeObjectURL(url);
+    });
 }
 
 function downloadSVGFile(filename, svgData) {

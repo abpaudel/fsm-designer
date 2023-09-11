@@ -469,11 +469,11 @@ function ExportAsLaTeX(bounds) {
                 var dx = Math.cos(angleOrNull);
                 var dy = Math.sin(angleOrNull);
                 if(Math.abs(dx) > Math.abs(dy)) {
-                    if(dx > 0) nodeParams = '[right] ', x -= width / 2;
-                    else nodeParams = '[left] ', x += width / 2;
+                    if(dx > 0) nodeParams = '[right,align=center] ', x -= width / 2;
+                    else nodeParams = '[left,align=center] ', x += width / 2;
                 } else {
-                    if(dy > 0) nodeParams = '[below] ', y -= 10;
-                    else nodeParams = '[above] ', y += 10;
+                    if(dy > 0) nodeParams = '[below,align=center] ', y -= 10;
+                    else nodeParams = '[above,align=center] ', y += 10;
                 }
             }
             x *= this._scale;

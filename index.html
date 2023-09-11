@@ -1,66 +1,66 @@
 <!doctype html>
 <html><head>
-	<title>Finite State Machine Designer - by Evan Wallace</title>
+    <title>Finite State Machine Designer - by Evan Wallace</title>
   <meta charset="utf-8">
-	<style>
+    <style>
 
 body {
-	text-align: center;
-	background: #DFDFDF;
-	margin: 0 30px 100px 30px;
-	font: 14px/18px 'Lucida Grande', 'Segoe UI', sans-serif;
+    text-align: center;
+    background: #DFDFDF;
+    margin: 0 30px 100px 30px;
+    font: 14px/18px 'Lucida Grande', 'Segoe UI', sans-serif;
 }
 
 h1 {
-	font: bold italic 50px Georgia, serif;
+    font: bold italic 50px Georgia, serif;
 }
 
 canvas {
-	display: block;
-	max-width: 1800px;
-	background: white;
-	border-radius: 20px;
-	-moz-border-radius: 20px;
-	margin: 10px auto;
+    display: block;
+    max-width: 1800px;
+    background: white;
+    border-radius: 20px;
+    -moz-border-radius: 20px;
+    margin: 10px auto;
 }
 
 a {
-	color: black;
+    color: black;
 }
 
 div {
-	margin: 30px auto;
-	text-align: left;
-	max-width: 800px;
+    margin: 30px auto;
+    text-align: left;
+    max-width: 800px;
 }
 
 .error {
-	display: block;
-	color: red;
-	font-size: 28px;
-	line-height: 30px;
-	padding: 30px;
+    display: block;
+    color: red;
+    font-size: 28px;
+    line-height: 30px;
+    padding: 30px;
 }
 
 p {
-	margin: 30px 0;
-	line-height: 20px;
+    margin: 30px 0;
+    line-height: 20px;
 }
 
 .center {
-	text-align: center;
+    text-align: center;
 }
 
 textarea {
-	display: none;
-	width: 800px;
-	height: 400px;
-	margin: 0 auto;
+    display: none;
+    width: 800px;
+    height: 400px;
+    margin: 0 auto;
 }
 
   </style>
-	<script src="fsm.js"></script>
-	<script>
+    <script src="fsm.js"></script>
+    <script>
 
 /*
  * base64.js - Base64 encoding and decoding functions
@@ -95,33 +95,33 @@ if (typeof btoa == 'undefined') {
     }
 }
 
-	</script>
+    </script>
 </head><body>
-	<h3>Finite State Machine Designer</h3>
-	<canvas id="canvas" width="1800" height="800">
-		<span class="error">Your browser does not support<br>the HTML5 &lt;canvas&gt; element</span>
-	</canvas>
-	<div>
-		<p class="center">Export as: <a href="javascript:saveAsPNG()">PNG</a> | <a href="javascript:saveAsSVG()">SVG</a> | <a href="javascript:saveAsLaTeX()">LaTeX</a> | <a href="javascript:saveAsJSON()">JSON</a> | <button onclick="javascript:uploadJSON()">Upload JSON</button></p>
-		<textarea id="output"></textarea>
-		<p>The big white box above is the FSM designer.&nbsp; Here's how to use it:</p>
-		<ul>
-			<li><b>Add a state:</b> double-click on the canvas</li>
-			<li><b>Add an arrow:</b> shift-drag on the canvas</li>
-			<li><b>Move something:</b> drag it around</li>
-			<li><b>Delete something:</b> click it and press the delete key (not the backspace key)</li>
-		</ul><ul>
-			<li><b>Circle radius:</b> <input type="range" id="rangeSlider" min="20" max="80" value="30" oninput="javascript:radiusChanged();" onchange="javascript:radiusChanged();" /> <output id="sliderValue">30</output>
-			<li><b>If you just want to add more text:</b> <button onclick="javascript:makeNodeTextOnly()">Toggle drawing the selected node's circles</button>
-			<li><b>Click here to clear everything:</b> <button onclick="javascript:clearCanvas()">Clear everything</button>
-			<li><b>Make accept state:</b> double-click on an existing state</li>
-			<li><b>Type numeric subscript:</b> put an underscore before the number (like "S_0")</li>
-			<li><b>Type greek letter:</b> put a backslash before it (like "\beta")</li>
-			<li><b>Additional symbols:</b> Type "\emptyset" for &#8709;, "\rightarrow" for &#8594;, and "\leftarrow" for &#8592;.</li>
-		</ul>
-		<p>This was made in HTML5 and JavaScript using the canvas element.</p>
-	</div>
-	<p>Created by <a href="http://madebyevan.com/">Evan Wallace</a> in 2010</p>
-	<!-- placeholder file upload thing to read the uploaded JSON -->
-	<input type="file" id="jsonUpload" style="opacity:0;" accept="text/json" oninput="javascript:jsonUploaded()"/>
+    <h3>Finite State Machine Designer</h3>
+    <canvas id="canvas" width="1800" height="800">
+        <span class="error">Your browser does not support<br>the HTML5 &lt;canvas&gt; element</span>
+    </canvas>
+    <div>
+        <p class="center">Export as: <a href="javascript:saveAsPNG()">PNG</a> | <a href="javascript:saveAsSVG()">SVG</a> | <a href="javascript:saveAsLaTeX()">LaTeX</a> | <a href="javascript:saveAsJSON()">JSON</a> | <button onclick="javascript:uploadJSON()">Upload JSON</button></p>
+        <textarea id="output"></textarea>
+        <p>The big white box above is the FSM designer.&nbsp; Here's how to use it:</p>
+        <ul>
+            <li><b>Add a state:</b> double-click on the canvas</li>
+            <li><b>Add an arrow:</b> shift-drag on the canvas</li>
+            <li><b>Move something:</b> drag it around</li>
+            <li><b>Delete something:</b> click it and press the delete key (not the backspace key)</li>
+        </ul><ul>
+            <li><b>Circle radius:</b> <input type="range" id="rangeSlider" min="20" max="80" value="30" oninput="javascript:radiusChanged();" onchange="javascript:radiusChanged();" /> <output id="sliderValue">30</output>
+            <li><b>If you just want to add more text:</b> <button onclick="javascript:makeNodeTextOnly()">Toggle drawing the selected node's circles</button>
+            <li><b>Click here to clear everything:</b> <button onclick="javascript:clearCanvas()">Clear everything</button>
+            <li><b>Make accept state:</b> double-click on an existing state</li>
+            <li><b>Type numeric subscript:</b> put an underscore before the number (like "S_0")</li>
+            <li><b>Type greek letter:</b> put a backslash before it (like "\beta")</li>
+            <li><b>Additional symbols:</b> Type "\emptyset" for &#8709;, "\rightarrow" for &#8594;, and "\leftarrow" for &#8592;.</li>
+        </ul>
+        <p>This was made in HTML5 and JavaScript using the canvas element.</p>
+    </div>
+    <p>Created by <a href="http://madebyevan.com/">Evan Wallace</a> in 2010</p>
+    <!-- placeholder file upload thing to read the uploaded JSON -->
+    <input type="file" id="jsonUpload" style="opacity:0;" accept="text/json" oninput="javascript:jsonUploaded()"/>
 </body></html>

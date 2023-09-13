@@ -30,6 +30,7 @@ function Link(a, b) {
     this.nodeA = a;
     this.nodeB = b;
     this.text = '';
+    this.formattedText = '';
     this.lineAngleAdjust = 0; // value to add to textAngle when link is straight line
 
     // make anchor point relative to the locations of nodeA and nodeB
@@ -179,6 +180,7 @@ function Node(x, y) {
     this.mouseOffsetY = 0;
     this.isAcceptState = false;
     this.text = '';
+    this.formattedText = '';
     this.textOnly = false;
 }
 
@@ -233,6 +235,7 @@ function SelfLink(node, mouse) {
     this.anchorAngle = 0;
     this.mouseOffsetAngle = 0;
     this.text = '';
+    this.formattedText = '';
 
     if(mouse) {
         this.setAnchorPoint(mouse.x, mouse.y);
@@ -304,6 +307,7 @@ function StartLink(node, start) {
     this.deltaX = 0;
     this.deltaY = 0;
     this.text = '';
+    this.formattedText = '';
 
     if(start) {
         this.setAnchorPoint(start.x, start.y);
@@ -878,7 +882,7 @@ window.onload = function() {
             selectedObject.isAcceptState = !selectedObject.isAcceptState;
             draw();
         }
-        caretIndex = selectedObject.text.length;
+        caretIndex = selectedObject.formattedText.length;
         updateStates();
     };
     var prevMouse = null;
@@ -961,15 +965,27 @@ document.onkeydown = function(e) {
         return true;
     } else if(key == 8) { // backspace key
         if(selectedObject != null && 'text' in selectedObject) {
-            // Remove the character before the caret
-            var textBeforeCaret = selectedObject.text.substring(0, caretIndex - 1);
             // Get the text after the caret
             var textAfterCaret = selectedObject.text.substring(caretIndex);
-            // Set the selected objects text to the concatnation of the text before and after the caret
-            selectedObject.text = textBeforeCaret + textAfterCaret;
-            // Decrement the caret index and reset the caret
-            if(--caretIndex < 0)
+            // Remove the character before the caret
+            do {
+                var textBeforeCaret = selectedObject.text.substring(0, caretIndex - 1);
+                var formattedTextBeforeCaret = convertLatexShortcuts(textBeforeCaret);
+                if(--caretIndex < 0)
                 caretIndex = 0;
+            console.log(formattedTextBeforeCaret, textBeforeCaret, textAfterCaret)
+            console.log(formattedTextBeforeCaret.length, textBeforeCaret.length)
+            } while (formattedTextBeforeCaret.length != textBeforeCaret.length) {
+            }
+            // Set the selected objects text to the concatnation of the text before and after the caret
+            // var concatenatedText = textBeforeCaret + textAfterCaret;
+            // var formattedConcatenatedText = convertLatexShortcuts(concatenatedText);
+
+            selectedObject.text = textBeforeCaret + textAfterCaret;
+            selectedObject.formattedText = convertLatexShortcuts(selectedObject.text);
+            // Decrement the caret index and reset the caret
+            // if(--caretIndex < 0)
+            //     caretIndex = 0;
             resetCaret();
             draw();
         }
@@ -1012,8 +1028,8 @@ document.onkeyup = function(e) {
     // Right arrow key
     if(key === 39){
         if(selectedObject && selectedObject.text){
-            if(++caretIndex > selectedObject.text.length)
-                caretIndex = selectedObject.text.length;
+            if(++caretIndex > selectedObject.formattedText.length)
+                caretIndex = selectedObject.formattedText.length;
             resetCaret();
             draw();
         }
@@ -1038,11 +1054,12 @@ document.onkeypress = function(e) {
         var newText = selectedObject.text.substring(0, caretIndex) + String.fromCharCode(key) + selectedObject.text.substring(caretIndex);
         caretIndex++;
         // Parse for Latex short cuts and update the caret index appropriately 
-        var formattedText = convertLatexShortcuts(newText);
+        formattedText = convertLatexShortcuts(newText);
         // FIXME: Commenting this line for now since it doesn't work properly. 
-        // caretIndex -= newText.length - formattedText.length;
+        caretIndex -= newText.length - formattedText.length;
         // Update the selected objects text
         selectedObject.text = newText;
+        selectedObject.formattedText = formattedText;
         // Draw the new text
         resetCaret();
         draw();
@@ -1274,6 +1291,7 @@ function restoreFromBackupData(backup) {
         var node = new Node(backupNode.x, backupNode.y);
         node.isAcceptState = backupNode.isAcceptState;
         node.text = backupNode.text;
+        node.formattedText = convertLatexShortcuts(node.text)
         node.textOnly = backupNode.textOnly;
         nodes.push(node);
     }
@@ -1284,16 +1302,19 @@ function restoreFromBackupData(backup) {
             link = new SelfLink(nodes[backupLink.node]);
             link.anchorAngle = backupLink.anchorAngle;
             link.text = backupLink.text;
+            link.formattedText = convertLatexShortcuts(link.text)
         } else if(backupLink.type == 'StartLink') {
             link = new StartLink(nodes[backupLink.node]);
             link.deltaX = backupLink.deltaX;
             link.deltaY = backupLink.deltaY;
             link.text = backupLink.text;
+            link.formattedText = convertLatexShortcuts(link.text)
         } else if(backupLink.type == 'Link') {
             link = new Link(nodes[backupLink.nodeA], nodes[backupLink.nodeB]);
             link.parallelPart = backupLink.parallelPart;
             link.perpendicularPart = backupLink.perpendicularPart;
             link.text = backupLink.text;
+            link.formattedText = convertLatexShortcuts(link.text)
             link.lineAngleAdjust = backupLink.lineAngleAdjust;
         }
         if(link != null) {

@@ -622,7 +622,7 @@ function convertLatexShortcuts(text) {
     // subscripts
     for(var i = 0; i < 10; i++) {
         text = text.replace(new RegExp('_' + i, 'g'), String.fromCharCode(8320 + i));
-        }
+    }
 
     return text;
 }
@@ -682,17 +682,19 @@ function drawText(c, originalText, x, y, angleOrNull, isSelected) {
         y = Math.round(y);
         c.fillText(text, x, y + 6);
         if(isSelected && caretVisible && canvasHasFocus() && document.hasFocus()) {
-            x += width;
+            var textBeforeCaretWidth = c.measureText(text.substring(0, caretIndex)).width;
+            x += textBeforeCaretWidth;
             c.beginPath();
             c.moveTo(x, y - 10);
             c.lineTo(x, y + 10);
             c.stroke();
         }
-    }
+}
 }
 
 var caretTimer;
 var caretVisible = true;
+var caretIndex = 0;
 
 function resetCaret() {
     clearInterval(caretTimer);
@@ -701,16 +703,20 @@ function resetCaret() {
 }
 
 var canvas;
+var canvasWidthInput;
+var canvasHeightInput;
 var nodeRadius = 30;
 var nodes = [];
 var links = [];
+var states = [];
+var statesIndex = -1;
 
-var cursorVisible = true;
 var snapToPadding = 6; // pixels
 var hitTargetPadding = 6; // pixels
 var selectedObject = null; // either a Link or a Node
 var currentLink = null; // a Link
 var movingObject = false;
+var movingAllObjects = false;
 var originalClick;
 
 function clearCanvas() {
@@ -721,6 +727,10 @@ function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     nodeRadius = 30;
     document.getElementById("rangeSlider").value = 30;
+    canvas.width = 1800;
+    canvas.height = 1000;
+    canvasWidthInput.value = canvas.width;
+    canvasHeightInput.value = canvas.height;
 }
 
 function makeNodeTextOnly() {
@@ -798,7 +808,20 @@ function snapNode(node) {
 window.onload = function() {
     canvas = document.getElementById('canvas');
     restoreBackup();
+    canvasWidthInput = document.getElementById("canvasWidth");
+    canvasHeightInput = document.getElementById("canvasHeight");
+    canvasWidthInput.value = canvas.width;
+    canvasHeightInput.value = canvas.height;
+    updateStates();
     draw();
+
+    document.querySelectorAll(".canvasSizeInput").forEach(function(elem) {
+        elem.addEventListener("keypress", function(e) {
+            if(e.key === "Enter") {
+                setCanvasSize();
+            }
+        });
+    });
 
     canvas.onmousedown = function(e) {
         var mouse = crossBrowserRelativeMousePos(e);
@@ -816,9 +839,13 @@ window.onload = function() {
                     selectedObject.setMouseStart(mouse.x, mouse.y);
                 }
             }
+            caretIndex = selectedObject.text.length;
             resetCaret();
         } else if(shift) {
             currentLink = new TemporaryLink(mouse, mouse);
+        } else {
+            movingAllObjects = true;
+            canvas.style.cursor = "all-scroll";
         }
 
         draw();
@@ -846,10 +873,15 @@ window.onload = function() {
             selectedObject.isAcceptState = !selectedObject.isAcceptState;
             draw();
         }
+        caretIndex = selectedObject.text.length;
+        updateStates();
     };
+    var prevMouse = null;
+    var mouse = null;
 
     canvas.onmousemove = function(e) {
-        var mouse = crossBrowserRelativeMousePos(e);
+        prevMouse = mouse;
+        mouse = crossBrowserRelativeMousePos(e);
 
         if(currentLink != null) {
             var targetNode = selectObject(mouse.x, mouse.y);
@@ -875,27 +907,40 @@ window.onload = function() {
             draw();
         }
 
-        if(movingObject) {
+        else if(movingObject) {
             selectedObject.setAnchorPoint(mouse.x, mouse.y);
             if(selectedObject instanceof Node) {
                 snapNode(selectedObject);
             }
             draw();
         }
+
+        else if(movingAllObjects) {
+            for(var i = 0; i < nodes.length; i++) {
+                nodes[i].x += mouse.x - prevMouse.x;
+                nodes[i].y += mouse.y - prevMouse.y;
+            }
+            
+            draw();
+        }
     };
 
     canvas.onmouseup = function(e) {
+        canvas.style.cursor = "default";
         movingObject = false;
+        movingAllObjects = false;
 
         if(currentLink != null) {
             if(!(currentLink instanceof TemporaryLink)) {
                 selectedObject = currentLink;
                 links.push(currentLink);
+                caretIndex = 0;
                 resetCaret();
             }
             currentLink = null;
             draw();
         }
+        updateStates();
     };
 }
 
@@ -911,7 +956,15 @@ document.onkeydown = function(e) {
         return true;
     } else if(key == 8) { // backspace key
         if(selectedObject != null && 'text' in selectedObject) {
-            selectedObject.text = selectedObject.text.substr(0, selectedObject.text.length - 1);
+            // Remove the character before the caret
+            var textBeforeCaret = selectedObject.text.substring(0, caretIndex - 1);
+            // Get the text after the caret
+            var textAfterCaret = selectedObject.text.substring(caretIndex);
+            // Set the selected objects text to the concatnation of the text before and after the caret
+            selectedObject.text = textBeforeCaret + textAfterCaret;
+            // Decrement the caret index and reset the caret
+            if(--caretIndex < 0)
+                caretIndex = 0;
             resetCaret();
             draw();
         }
@@ -942,6 +995,31 @@ document.onkeyup = function(e) {
     if(key == 16) {
         shift = false;
     }
+    // Left arrow key
+    if(key === 37){
+        if(selectedObject && selectedObject.text){
+            if(--caretIndex < 0)
+                caretIndex = 0;
+            resetCaret();
+            draw();
+        }
+    }
+    // Right arrow key
+    if(key === 39){
+        if(selectedObject && selectedObject.text){
+            if(++caretIndex > selectedObject.text.length)
+                caretIndex = selectedObject.text.length;
+            resetCaret();
+            draw();
+        }
+    }
+    if(e.ctrlKey) {
+        if(key == 90) // ctrl z
+            getPreviousState();
+        else if(key == 89) // ctrl y
+            getNextState();
+    }
+    updateStates();
 };
 
 document.onkeypress = function(e) {
@@ -951,10 +1029,19 @@ document.onkeypress = function(e) {
         // don't read keystrokes when other things have focus
         return true;
     } else if(key >= 0x20 && key <= 0x7E && !e.metaKey && !e.altKey && !e.ctrlKey && selectedObject != null && 'text' in selectedObject) {
-        selectedObject.text += String.fromCharCode(key);
+        // Add the letter at the caret
+        var newText = selectedObject.text.substring(0, caretIndex) + String.fromCharCode(key) + selectedObject.text.substring(caretIndex);
+        caretIndex++;
+        // Parse for Latex short cuts and update the caret index appropriately 
+        var formattedText = convertLatexShortcuts(newText);
+        // FIXME: Commenting this line for now since it doesn't work properly. 
+        // caretIndex -= newText.length - formattedText.length;
+        // Update the selected objects text
+        selectedObject.text = newText;
+        // Draw the new text
         resetCaret();
         draw();
-
+        
         // don't let keys do their actions (like space scrolls down the page)
         return false;
     } else if(key == 8) {
@@ -1137,6 +1224,7 @@ function jsonUploaded() {
             var data = JSON.parse(content);
             clearCanvas();
             restoreFromBackupData(data);
+            draw();
         } catch (e) {
             alert("Failed loading file " + file.name);
         }
@@ -1170,6 +1258,12 @@ function fixed(number, digits) {
 }
 
 function restoreFromBackupData(backup) {
+    canvas.width = backup.canvasWidth || canvas.width;
+    canvas.height = backup.canvasHeight || canvas.height;
+    canvasWidthInput = document.getElementById("canvasWidth");
+    canvasHeightInput = document.getElementById("canvasHeight");
+    canvasWidthInput.value = canvas.width;
+    canvasHeightInput.value = canvas.height;
     for(var i = 0; i < backup.nodes.length; i++) {
         var backupNode = backup.nodes[i];
         var node = new Node(backupNode.x, backupNode.y);
@@ -1202,7 +1296,6 @@ function restoreFromBackupData(backup) {
         }
     }
     nodeRadius = backup.nodeRadius;
-    draw();
 }
 
 function restoreBackup() {
@@ -1213,6 +1306,7 @@ function restoreBackup() {
     try {
         var backup = JSON.parse(localStorage['fsm']);
         restoreFromBackupData(backup);
+        draw();
     } catch(e) {
         localStorage['fsm'] = '';
     }
@@ -1223,6 +1317,8 @@ function getBackupData() {
         'nodes': [],
         'links': [],
         'nodeRadius': nodeRadius,
+        'canvasWidth': canvas.width,
+        'canvasHeight': canvas.height
     };
     for(var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
@@ -1278,4 +1374,69 @@ function saveBackup() {
     var backup = getBackupData();
 
     localStorage['fsm'] = JSON.stringify(backup);
+}
+
+function setCanvasSize() {
+    if(canvas.width !== canvasWidthInput.value) {
+        var diff = (canvasWidthInput.value - canvas.width) / 2;
+        for(var i = 0; i < nodes.length; i++)
+            nodes[i].x += diff;
+    }
+    canvas.width = canvasWidthInput.value;
+    canvas.height = canvasHeightInput.value;
+    draw();
+    updateStates();
+}
+
+function updateStates() {
+    var newState = saveJSONState();
+    if(newState !== states[statesIndex]) {
+        statesIndex++;
+        states.length = statesIndex;
+        states.push(saveJSONState());
+    }
+}
+
+// Functions for Undo-Redo
+function saveJSONState() {
+    if(!JSON) {
+        return;
+    }
+    return JSON.stringify(getBackupData());
+}
+
+function restoreJSONState(jsonString) {
+    if(!JSON) {
+        return;
+    }
+    try {
+        var backup = JSON.parse(jsonString);
+        nodes = [];
+        links = [];
+        restoreFromBackupData(backup);
+    } catch(e) {
+        alert("Import failed!");
+    }
+}
+
+// Undo
+function getPreviousState() {
+    statesIndex--;
+    if(statesIndex < 0) {
+        statesIndex = 0;
+        return;
+    }
+    restoreJSONState(states[statesIndex]);
+    draw();
+}
+
+// Redo
+function getNextState() {
+    statesIndex++;
+    if(statesIndex >= states.length) {
+        statesIndex = states.length - 1;
+        return;
+    }
+    restoreJSONState(states[statesIndex]);
+    draw();
 }

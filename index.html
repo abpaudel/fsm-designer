@@ -17,7 +17,6 @@ h1 {
 
 canvas {
     display: block;
-    max-width: 1800px;
     background: white;
     border-radius: 20px;
     -moz-border-radius: 20px;
@@ -98,11 +97,25 @@ if (typeof btoa == 'undefined') {
     </script>
 </head><body>
     <h3>Finite State Machine Designer</h3>
-    <canvas id="canvas" width="1800" height="800">
+    <canvas id="canvas" width="1800" height="1000">
         <span class="error">Your browser does not support<br>the HTML5 &lt;canvas&gt; element</span>
     </canvas>
     <div>
-        <p class="center">Export as: <a href="javascript:saveAsPNG()">PNG</a> | <a href="javascript:saveAsSVG()">SVG</a> | <a href="javascript:saveAsLaTeX()">LaTeX</a> | <a href="javascript:saveAsJSON()">JSON</a> | <button onclick="javascript:uploadJSON()">Upload JSON</button></p>
+        <p class="center">Export as: 
+            <a href="javascript:saveAsPNG()">PNG</a> | 
+            <a href="javascript:saveAsSVG()">SVG</a> | 
+            <a href="javascript:saveAsLaTeX()">LaTeX</a> | 
+            <a href="javascript:saveAsJSON()">JSON</a> | 
+            <button onclick="javascript:uploadJSON()">Upload JSON</button>
+            <input type="file" id="jsonUpload" style="opacity:0;" accept="text/json" oninput="javascript:jsonUploaded()"/>
+        </p>
+        <div>
+			<label for="canvasWidth">Width</label>
+			<input id="canvasWidth" name="canvasWidth" class="canvasSizeInput" type="number" min="800">
+			<label for="canvasHeight">Height</label>
+			<input id="canvasHeight" name="canvasHeight" class="canvasSizeInput" type="number" min="600">
+			<button type="button" onclick="setCanvasSize()">Set canvas size</button>
+		</div>
         <textarea id="output"></textarea>
         <p>The big white box above is the FSM designer.&nbsp; Here's how to use it:</p>
         <ul>
@@ -118,11 +131,10 @@ if (typeof btoa == 'undefined') {
             <li><b>Type numeric subscript:</b> put an underscore before the number (like "S_0")</li>
             <li><b>Type greek letter:</b> put a backslash before it (like "\beta")</li>
             <li><b>Additional symbols:</b> Type "\emptyset" for &#8709;, "\rightarrow" for &#8594;, and "\leftarrow" for &#8592;.</li>
+            <li><b>To undo/redo</b> ctrl+z/ctrl+y</li>
+            <li><b>Move viewport:</b> click on canvas background and move mouse around</li>
         </ul>
-        <p>This was made in HTML5 and JavaScript using the canvas element.</p>
     </div>
-    <p>Originally created by <a href="http://madebyevan.com/fsm">Evan Wallace</a> in 2010.</p>
-    <p>This version was adapted from <a href="https://www.cs.unc.edu/~otternes/comp455/fsm_designer/">Nathan Otterness</a> to include my own additional changes.</p>
-    <!-- placeholder file upload thing to read the uploaded JSON -->
-    <input type="file" id="jsonUpload" style="opacity:0;" accept="text/json" oninput="javascript:jsonUploaded()"/>
+    <p>Original code from <a href="https://github.com/evanw/fsm">this repo</a>.<br>
+    This version includes my own changes with adaptations from <a href="https://github.com/yalue/fsm_designer">these</a> <a href="https://github.com/Merfoo/fsm">repos</a>.</p>
 </body></html>

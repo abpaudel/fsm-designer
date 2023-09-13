@@ -482,7 +482,7 @@ function ExportAsLaTeX(bounds) {
             escapedBraces = escapedBraces.replace(/}/g, "\\}");
             // For LateX compatibility, replace node names like "q_1_0" with "q_{10}"
             escapedBraces = escapedBraces.replace(/_(\d+)_(\d+)/g, '_{\$1\$2}');
-            this._texData += '\\draw (' + fixed(x, 2) + ',' + fixed(-y, 2) + ') node ' + nodeParams + '{$' + escapedBraces.replace(/ /g, '\\mbox{ }') + '$};\n';
+            this._texData += '\\draw (' + fixed(x, 2) + ',' + fixed(-y, 2) + ') node ' + nodeParams + '{$' + escapedBraces + '$};\n';
         }
     };
 
@@ -604,19 +604,19 @@ function convertLatexShortcuts(text) {
     for(var i = 0; i < greekLetterNames.length; i++) {
         var name = greekLetterNames[i];
         if (name == "emptyset") {
-            text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8709));
+            text = text.replace(new RegExp('\\\\' + name + ' ', 'g'), String.fromCharCode(8709));
             continue;
         }
         if (name == "rightarrow") {
-            text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8594));
+            text = text.replace(new RegExp('\\\\' + name + ' ', 'g'), String.fromCharCode(8594));
             continue;
         }
         if (name == "leftarrow") {
-            text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(8592));
+            text = text.replace(new RegExp('\\\\' + name + ' ', 'g'), String.fromCharCode(8592));
             continue;
         }
-        text = text.replace(new RegExp('\\\\' + name, 'g'), String.fromCharCode(913 + i + (i > 16)));
-        text = text.replace(new RegExp('\\\\' + name.toLowerCase(), 'g'), String.fromCharCode(945 + i + (i > 16)));
+        text = text.replace(new RegExp('\\\\' + name + ' ', 'g'), String.fromCharCode(913 + i + (i > 16)));
+        text = text.replace(new RegExp('\\\\' + name.toLowerCase() + ' ', 'g'), String.fromCharCode(945 + i + (i > 16)));
     }
 
     // subscripts

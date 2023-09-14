@@ -478,11 +478,16 @@ function ExportAsLaTeX(bounds) {
             }
             x *= this._scale;
             y *= this._scale;
-            var escapedBraces = originalText.replace(/{/g, "\\{");
-            escapedBraces = escapedBraces.replace(/}/g, "\\}");
+            // Escape curly braces
+            var formattedText = originalText.replace(/{/g, "\\{");
+            formattedText = formattedText.replace(/}/g, "\\}");
             // For LateX compatibility, replace node names like "q_1_0" with "q_{10}"
-            escapedBraces = escapedBraces.replace(/_(\d+)_(\d+)/g, '_{\$1\$2}');
-            this._texData += '\\draw (' + fixed(x, 2) + ',' + fixed(-y, 2) + ') node ' + nodeParams + '{$' + escapedBraces + '$};\n';
+            formattedText = formattedText.replace(/_(\d+)_(\d+)/g, '_{\$1\$2}');
+            // Escape $ characters
+            formattedText = formattedText.replace(/\$/g, "\\$");
+            // Replace \\ used to denote line breaks to $\\$. This ends math mode, breaks line and begins math mode again.
+            formattedText = formattedText.replace(/\\\\/g, "$\\\\$");
+            this._texData += '\\draw (' + fixed(x, 2) + ',' + fixed(-y, 2) + ') node ' + nodeParams + '{$' + formattedText + '$};\n';
         }
     };
 

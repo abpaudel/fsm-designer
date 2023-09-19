@@ -738,6 +738,7 @@ function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     nodeRadius = 30;
     document.getElementById("rangeSlider").value = 30;
+    document.getElementById("output").style.display = "none";
     canvas.width = 1800;
     canvas.height = 1000;
     canvasWidthInput.value = canvas.width;

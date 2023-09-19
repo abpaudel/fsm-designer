@@ -691,14 +691,16 @@ function drawText(c, originalText, x, y, angleOrNull, isSelected) {
         y = Math.round(y);
         c.fillText(text, x, y + 6);
         if(isSelected && caretVisible && canvasHasFocus() && document.hasFocus()) {
-            var textBeforeCaretWidth = c.measureText(text.substring(0, caretIndex)).width;
+            var textBeforeCaret = originalText.substring(0, caretIndex);
+            var formattedTextBeforeCaret = convertLatexShortcuts(textBeforeCaret);
+            var textBeforeCaretWidth = c.measureText(formattedTextBeforeCaret).width;
             x += textBeforeCaretWidth;
             c.beginPath();
             c.moveTo(x, y - 10);
             c.lineTo(x, y + 10);
             c.stroke();
         }
-}
+    }
 }
 
 var caretTimer;
@@ -882,7 +884,7 @@ window.onload = function() {
             selectedObject.isAcceptState = !selectedObject.isAcceptState;
             draw();
         }
-        caretIndex = selectedObject.formattedText.length;
+        caretIndex = selectedObject.text.length;
         updateStates();
     };
     var prevMouse = null;
@@ -965,27 +967,23 @@ document.onkeydown = function(e) {
         return true;
     } else if(key == 8) { // backspace key
         if(selectedObject != null && 'text' in selectedObject) {
+            // Get formatted text length
+            formattedTextLength = selectedObject.formattedText.length;
             // Get the text after the caret
             var textAfterCaret = selectedObject.text.substring(caretIndex);
-            // Remove the character before the caret
+            // Remove characters until length of new formatted text decreases by 1
             do {
                 var textBeforeCaret = selectedObject.text.substring(0, caretIndex - 1);
-                var formattedTextBeforeCaret = convertLatexShortcuts(textBeforeCaret);
-                if(--caretIndex < 0)
-                caretIndex = 0;
-            console.log(formattedTextBeforeCaret, textBeforeCaret, textAfterCaret)
-            console.log(formattedTextBeforeCaret.length, textBeforeCaret.length)
-            } while (formattedTextBeforeCaret.length != textBeforeCaret.length) {
-            }
-            // Set the selected objects text to the concatnation of the text before and after the caret
-            // var concatenatedText = textBeforeCaret + textAfterCaret;
-            // var formattedConcatenatedText = convertLatexShortcuts(concatenatedText);
-
-            selectedObject.text = textBeforeCaret + textAfterCaret;
-            selectedObject.formattedText = convertLatexShortcuts(selectedObject.text);
-            // Decrement the caret index and reset the caret
-            // if(--caretIndex < 0)
-            //     caretIndex = 0;
+                var newText = textBeforeCaret + textAfterCaret
+                var formattedNewText = convertLatexShortcuts(newText);
+                if(--caretIndex < 0){
+                    caretIndex = 0;
+                    break;
+                }
+            } while (formattedNewText.length != formattedTextLength - 1)
+            
+            selectedObject.text = newText;
+            selectedObject.formattedText = formattedNewText;
             resetCaret();
             draw();
         }
@@ -1019,8 +1017,19 @@ document.onkeyup = function(e) {
     // Left arrow key
     if(key === 37){
         if(selectedObject && selectedObject.text){
-            if(--caretIndex < 0)
-                caretIndex = 0;
+            formattedTextLength = selectedObject.formattedText.length;
+            do {
+                if (--caretIndex < 0){
+                    caretIndex = 0;
+                    break;
+                }
+                var textBeforeCaret = selectedObject.text.substring(0, caretIndex);
+                var formattedTextBeforeCaret = convertLatexShortcuts(textBeforeCaret);
+                var textAfterCaret = selectedObject.text.substring(caretIndex);
+                var formattedTextAfterCaret = convertLatexShortcuts(textAfterCaret);
+                var formattedNewText = formattedTextBeforeCaret + formattedTextAfterCaret
+            } while (formattedNewText.length != formattedTextLength)
+            
             resetCaret();
             draw();
         }
@@ -1028,8 +1037,18 @@ document.onkeyup = function(e) {
     // Right arrow key
     if(key === 39){
         if(selectedObject && selectedObject.text){
-            if(++caretIndex > selectedObject.formattedText.length)
-                caretIndex = selectedObject.formattedText.length;
+            formattedTextLength = selectedObject.formattedText.length;
+            do {
+                if(++caretIndex > selectedObject.text.length) {
+                    caretIndex = selectedObject.text.length;
+                    break;
+                }
+                var textBeforeCaret = selectedObject.text.substring(0, caretIndex);
+                var formattedTextBeforeCaret = convertLatexShortcuts(textBeforeCaret);
+                var textAfterCaret = selectedObject.text.substring(caretIndex);
+                var formattedTextAfterCaret = convertLatexShortcuts(textAfterCaret);
+                var formattedNewText = formattedTextBeforeCaret + formattedTextAfterCaret
+            } while (formattedNewText.length != formattedTextLength)
             resetCaret();
             draw();
         }
@@ -1053,13 +1072,9 @@ document.onkeypress = function(e) {
         // Add the letter at the caret
         var newText = selectedObject.text.substring(0, caretIndex) + String.fromCharCode(key) + selectedObject.text.substring(caretIndex);
         caretIndex++;
-        // Parse for Latex short cuts and update the caret index appropriately 
-        formattedText = convertLatexShortcuts(newText);
-        // FIXME: Commenting this line for now since it doesn't work properly. 
-        caretIndex -= newText.length - formattedText.length;
         // Update the selected objects text
         selectedObject.text = newText;
-        selectedObject.formattedText = formattedText;
+        selectedObject.formattedText = convertLatexShortcuts(newText);;
         // Draw the new text
         resetCaret();
         draw();
